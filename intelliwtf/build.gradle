@@ -1,0 +1,45 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+dependencies {
+
+  def intellijHomeDir = getIntellijHome()
+  def intellijDependencies = getIntellijDependencies(intellijHomeDir)
+
+  compile files(intellijDependencies)
+  compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+  compile group: 'soap-dust', name: 'soap-dust', version: '0.0.77'
+}
+
+task packJar(dependsOn: build, description: "Building the plugin.") <<
+        {
+          ant.jar(destfile: new File(buildDir, 'plugin/intelliwtf.jar'))
+                  {
+                    zipgroupfileset(file: jar.archivePath.absolutePath)
+                  }
+        }
+
+def getIntellijHome() {
+  def intellijHomePropVal = System.getProperty('intellij.home')
+
+  if (intellijHomePropVal == null) {
+    throw new IllegalArgumentException("Could not find a value for 'intellij.home'.")
+  }
+
+  def intellijHome = new File(intellijHomePropVal)
+  if (!intellijHome.isDirectory()) {
+    throw new IllegalArgumentException("Could not find a directory at 'intellij.home': ${intellijHomePropVal}.")
+  }
+
+  return intellijHome
+}
+
+def getIntellijDependencies(File intellijHomeDir) {
+
+  def intellijLibDir = new File(intellijHomeDir, "lib")
+  if (!intellijLibDir.isDirectory()) {
+    throw new IllegalArgumentException("Could not find a directory at : ${intellijLibDir.absolutePath}.")
+  }
+
+  return [new File(intellijLibDir, 'openapi.jar').absolutePath, new File(intellijLibDir, 'util.jar').absolutePath]
+}

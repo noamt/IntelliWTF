@@ -20,7 +20,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.editor.SelectionModel;
 
 import java.awt.Dimension;
 
@@ -32,8 +32,11 @@ public class SubmitWtfAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         Editor editor = e.getData(PlatformDataKeys.EDITOR);
-        editor.getSelectionModel().getSelectedText();
+        SelectionModel editorSelectionModel = editor.getSelectionModel();
+        String selectedTextFromEditor = editorSelectionModel.getSelectedText();
+
         SubmitWtfDialog dialog = new SubmitWtfDialog();
+        dialog.setSelectedText(selectedTextFromEditor);
         dialog.pack();
         dialog.setSize(700, 500);
         dialog.setMinimumSize(new Dimension(700, 500));

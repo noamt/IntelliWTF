@@ -16,13 +16,21 @@
 
 package org.noam.intelliwtf.actions;
 
+import com.intellij.openapi.ui.Messages;
+import org.apache.commons.lang.StringUtils;
+import soapdust.Client;
+import soapdust.ComposedValue;
+import soapdust.FaultResponseException;
+import soapdust.MalformedResponseException;
+import soapdust.MalformedWsdlException;
+
 import javax.swing.*;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class SubmitWtfDialog extends JDialog {
     private JPanel contentPane;
@@ -76,13 +84,69 @@ public class SubmitWtfDialog extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
+    public void setSelectedText(String selectedTextFromEditor) {
+        if (StringUtils.isNotBlank(selectedTextFromEditor)) {
+            codeSnippetTextArea.setText(selectedTextFromEditor);
+        }
+    }
+
     private void onOK() {
-        // add your code here
-        dispose();
+        try {
+            validateFieldValues();
+            Client client = new Client();
+            client.setWsdlUrl("http://thedailywtf.com/SubmitWTF.asmx?wsdl");
+            client.setEndPoint("http://thedailywtf.com/SubmitWTF.asmx");
+
+            ComposedValue form = new ComposedValue();
+            form.put("name", submitterNameTextField.getText());
+            form.put("emailAddress", submitterEmailTextField.getText());
+            form.put("subject", subjectTextField.getText());
+            form.put("comments", messageTextArea.getText());
+            form.put("codeSubmission", codeSnippetTextArea.getText());
+            form.put("doNotPublish", Boolean.toString(noPublishCheckBox.isSelected()));
+
+            ComposedValue response = client.call("Submit", form);
+            if (response != null) {
+                Messages.showInfoMessage("Your WTF was successfully submitted", "YAY!");
+            }
+            dispose();
+        } catch (IllegalArgumentException iae) {
+            Messages.showErrorDialog(iae.getMessage(), "Error");
+        } catch (MalformedWsdlException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (MalformedResponseException e) {
+            e.printStackTrace();
+        } catch (FaultResponseException e) {
+            e.printStackTrace();
+        }
     }
 
     private void onCancel() {
         // add your code here if necessary
         dispose();
+    }
+
+    private void validateFieldValues() {
+        if (StringUtils.isBlank(submitterNameTextField.getText())) {
+            throw new IllegalArgumentException("Please enter your name.");
+        }
+
+        if (StringUtils.isBlank(submitterEmailTextField.getText())) {
+            throw new IllegalArgumentException("Please enter your e-mail.");
+        }
+
+        if (StringUtils.isBlank(subjectTextField.getText())) {
+            throw new IllegalArgumentException("Please enter a subject for the post.");
+        }
+
+        if (StringUtils.isBlank(messageTextArea.getText())) {
+            throw new IllegalArgumentException("Please enter a message.");
+        }
+
+        if (StringUtils.isBlank(codeSnippetTextArea.getText())) {
+            throw new IllegalArgumentException("Please enter a WTF-worthy code snippet.");
+        }
     }
 }
