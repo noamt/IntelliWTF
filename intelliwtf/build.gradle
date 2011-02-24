@@ -11,13 +11,15 @@ dependencies {
   compile group: 'soap-dust', name: 'soap-dust', version: '0.0.77'
 }
 
-task packJar(dependsOn: build, description: "Building the plugin.") <<
-        {
-          ant.jar(destfile: new File(buildDir, 'plugin/intelliwtf.jar'))
-                  {
-                    zipgroupfileset(file: jar.archivePath.absolutePath)
-                  }
-        }
+task zip(dependsOn: jar, type: Zip) {
+  into('intelliwtf/lib') {
+    from jar.archivePath
+    from configurations.runtime {
+      exclude 'openapi.jar'
+      exclude 'util.jar'
+    }
+  }
+}
 
 def getIntellijHome() {
   def intellijHomePropVal = System.getProperty('intellij.home')
