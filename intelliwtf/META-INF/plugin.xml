@@ -8,7 +8,7 @@
 
     <actions>
         <action id="SubmitWTFAction" class="org.noam.intelliwtf.actions.SubmitWtfAction" text="Submit to TDWTF"
-                description="Submit the selected code snippet to TDWTF" icon="/icons/intelliwtf.ico">
+                description="Submit the selected code snippet to TDWTF" icon="icons/intelliwtf.ico">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="EditorToggleColumnMode"/>
         </action>
     </actions>
